@@ -1,0 +1,34 @@
+name: "QA Approve"
+
+on:
+  pull_request:
+    branches-ignore: "dependabot/**"
+    types:
+      - opened
+  issue_comment:
+    branches-ignore: "dependabot/**"
+    types:
+      - created
+      - deleted
+      - edited
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: khan/pull-request-comment-trigger@v1.1.0
+        id: check
+        with:
+          trigger: 'QA approve'
+          reaction: rocket
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - run: |
+          echo "The phrase 'QA approve' needs to appear in this pull request's \
+          comments before it can be merged"
+          exit 1
+        if: steps.check.outputs.triggered == 'false'
+      - run: |
+          echo "'QA approve' phrase located in pull request's comments"
+          exit 0
+        if: steps.check.outputs.triggered == 'true'
